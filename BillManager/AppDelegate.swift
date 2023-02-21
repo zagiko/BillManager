@@ -1,7 +1,3 @@
-//
-//  AppDelegate.swift
-//  BillManager
-//
 
 import UIKit
 
@@ -15,7 +11,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         
         let inHourButton = UNNotificationAction(identifier: Bill.inHourButtonID, title: "In one hour")
         
-        let paidButton = UNNotificationAction(identifier: Bill.paidButtonID, title: "I have paid")
+        let paidButton = UNNotificationAction(identifier: Bill.paidButtonID, title: "I have paid yet")
         
         let alarmCategory = UNNotificationCategory(identifier: Bill.notificationCategoryID, actions: [inHourButton, paidButton], intentIdentifiers: [], options: [])
         
@@ -41,6 +37,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
     
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.alert, .sound])
+        
+        
+    }
     
     
     

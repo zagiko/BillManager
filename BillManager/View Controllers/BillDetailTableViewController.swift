@@ -1,7 +1,3 @@
-//
-//  BillDetailTableViewController.swift
-//  BillManager
-//
 
 import UIKit
 
@@ -220,5 +216,6 @@ class BillDetailTableViewController: UITableViewController, UITextFieldDelegate 
     @objc func cancelButtonTapped() {
         dismiss(animated: true, completion: nil)
     }
+    
 
 }

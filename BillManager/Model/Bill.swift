@@ -1,6 +1,6 @@
-// BillManager
 
 import Foundation
+import UserNotifications
 
 struct Bill: Codable {
     let id: UUID
@@ -14,18 +14,70 @@ struct Bill: Codable {
     static let inHourButtonID = "inHourButton"
     static let paidButtonID = "paidButtonID"
     
-    
     init(id: UUID = UUID()) {
         self.id = id
     }
+    
+    func schedule(completion: @escaping (Bool) -> ()) {
+        permitionCheck { (granted) in
+            guard granted else {
+                DispatchQueue.main.async {
+                    completion(false)
+                }
+                return
+            }
+            let content = UNMutableNotificationContent()
+            content.title = "Please pay bill"
+            content.body = "\(String(describing: self.payee))"
+            content.sound = UNNotificationSound.default
+            content.categoryIdentifier = Bill.notificationCategoryID
+            
+            guard let trigerDate = self.remindDate else {
+                return }
+            
+            let triggerDataComponents = Calendar.current.dateComponents([.minute, .hour, .day, .month, .year], from: trigerDate)
+            
+            let trigger = UNCalendarNotificationTrigger(dateMatching: triggerDataComponents, repeats: false)
+            
+            let request = UNNotificationRequest(identifier: Bill.notificationCategoryID, content: content, trigger: trigger)
+            
+            UNUserNotificationCenter.current().add(request) {
+                (error: Error?) in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        print(error.localizedDescription)
+                        completion(false)
+                    } else {
+                        Database.shared.save()
+                        completion(true)
+                    }
+                }
+            }
+            
+            
+            
+        }
+        
+        
+        
+        
+        
+        
+    }
+    
+    
+    
+    
+    
+    
 }
 
 extension Bill: Hashable {
-//    static func ==(_ lhs: Bill, _ rhs: Bill) -> Bool {
-//        return lhs.id == rhs.id
-//    }
-//
-//    func hash(into hasher: inout Hasher) {
-//        hasher.combine(id)
-//    }
+    //    static func ==(_ lhs: Bill, _ rhs: Bill) -> Bool {
+    //        return lhs.id == rhs.id
+    //    }
+    //
+    //    func hash(into hasher: inout Hasher) {
+    //        hasher.combine(id)
+    //    }
 }

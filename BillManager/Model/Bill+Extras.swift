@@ -3,6 +3,7 @@ import Foundation
 import UserNotifications
 
 extension Bill {
+    
     var hasReminder: Bool {
         return (remindDate != nil)
     }
@@ -23,7 +24,9 @@ extension Bill {
         return dateString
     }
     
+    
     func deleteReminder() {
+        
         
     
     }
@@ -36,6 +39,10 @@ extension Bill {
     private func authorizationToDisplay(completion: @escaping (Bool) -> () ) {
         
     }
+    
+    
+    
+    
     
     func permitionCheck(completion: @escaping (Bool) -> ()) {
         
