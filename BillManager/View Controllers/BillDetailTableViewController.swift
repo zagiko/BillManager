@@ -10,7 +10,7 @@ class BillDetailTableViewController: UITableViewController, UITextFieldDelegate 
     @IBOutlet var amountTextField: UITextField!
     @IBOutlet var dueDateLabel: UILabel!
     @IBOutlet var dueDatePicker: UIDatePicker!
-   
+    
     @IBOutlet var remindStatusLabel: UILabel!
     @IBOutlet var remindSwitch: UISwitch!
     @IBOutlet var remindDatePicker: UIDatePicker!
@@ -50,9 +50,11 @@ class BillDetailTableViewController: UITableViewController, UITextFieldDelegate 
             title = "Edit Bill"
             payeeTextField.text = bill.payee
             amountTextField.text = String(format: "%@", arguments: [(bill.amount ?? 0).formatted(.number.precision(.fractionLength(2)))])
+            
             if let dueDate = bill.dueDate {
                 dueDatePicker.date = dueDate
             }
+        
             updateDueDateUI()
             remindSwitch.isOn = bill.hasReminder
             remindDatePicker.date = bill.remindDate ?? Date()
@@ -61,11 +63,14 @@ class BillDetailTableViewController: UITableViewController, UITextFieldDelegate 
             paidDate = bill.paidDate
             updatePaymentUI()
             navigationItem.leftBarButtonItem = nil
+            
         } else {
             title = "Add Bill"
             navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancelButtonTapped))
         }
     }
+
+    
     
     @objc func dismissKeyboard() {
         view.endEditing(true)
@@ -95,7 +100,7 @@ class BillDetailTableViewController: UITableViewController, UITextFieldDelegate 
     }
     
     @IBAction func remindSwitchChanged(_ sender: UISwitch) {
-
+        
         if sender.isOn {
             isDueDatePickerShown = false
             isRemindDatePickerShown = true
@@ -173,7 +178,7 @@ class BillDetailTableViewController: UITableViewController, UITextFieldDelegate 
             return 44
         }
     }
-        
+    
     @IBAction func dueDatePickerValueChanged(_ sender: UIDatePicker) {
         updateDueDateUI()
     }
@@ -195,7 +200,7 @@ class BillDetailTableViewController: UITableViewController, UITextFieldDelegate 
             return true
         }
     }
-
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         var bill = self.bill ?? Database.shared.addBill()
         
@@ -204,18 +209,25 @@ class BillDetailTableViewController: UITableViewController, UITextFieldDelegate 
         bill.dueDate = dueDatePicker.date
         bill.paidDate = paidDate
         
+        guard let controller = segue.destination as? BillListTableViewController else { return }
+        
         if remindSwitch.isOn {
             bill.remindDate = remindDatePicker.date
-        } else {
-            bill.remindDate = nil
+            bill.schedule { [weak self] (permissionGranted) in
+                if !permissionGranted {
+                    controller.presentNeedAutorizationAlert()
+                } else {
+                    bill.remindDate = nil
+                }
+                
+                Database.shared.updateAndSave(bill)
+            }
+            
+            func cancelButtonTapped() {
+                dismiss(animated: true, completion: nil)
+            }
+            
+            
         }
-        
-        Database.shared.updateAndSave(bill)
     }
-    
-    @objc func cancelButtonTapped() {
-        dismiss(animated: true, completion: nil)
-    }
-    
-
 }

@@ -70,5 +70,21 @@ class BillListTableViewController: UITableViewController {
         }
     }
     
-    @IBAction func unwindFromBillDetail(segue: UIStoryboardSegue) { }
+    @IBAction func unwindFromBillDetail(segue: UIStoryboardSegue) {
+        }
+        
+        
+    func presentNeedAutorizationAlert() {
+        let title = "Authorization Needed"
+        let message = "Alarms don't work without notifications, and it looks like you haven't granted us permission to send you those. Please go to the iOS Settings app and grant us notification permissions."
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let okAction = UIAlertAction(title: "Okay", style: .default, handler: nil)
+        
+        alert.addAction(okAction)
+        
+        present(alert, animated: true, completion: nil)
+    }
+    
+    
+    
 }

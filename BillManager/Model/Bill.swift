@@ -26,11 +26,16 @@ struct Bill: Codable {
                 }
                 return
             }
+            
+            // Create push content
+            
             let content = UNMutableNotificationContent()
             content.title = "Please pay bill"
             content.body = "\(String(describing: self.payee))"
             content.sound = UNNotificationSound.default
             content.categoryIdentifier = Bill.notificationCategoryID
+            
+            // Create push conditions
             
             guard let trigerDate = self.remindDate else {
                 return }
@@ -47,9 +52,9 @@ struct Bill: Codable {
                     if let error = error {
                         print(error.localizedDescription)
                         completion(false)
-                    } else {
-                        Database.shared.save()
-                        completion(true)
+                        } else {
+//                            Database.shared.save()
+                            completion(true)
                     }
                 }
             }
