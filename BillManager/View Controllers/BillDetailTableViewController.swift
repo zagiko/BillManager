@@ -54,7 +54,7 @@ class BillDetailTableViewController: UITableViewController, UITextFieldDelegate 
             if let dueDate = bill.dueDate {
                 dueDatePicker.date = dueDate
             }
-        
+            
             updateDueDateUI()
             remindSwitch.isOn = bill.hasReminder
             remindDatePicker.date = bill.remindDate ?? Date()
@@ -69,7 +69,7 @@ class BillDetailTableViewController: UITableViewController, UITextFieldDelegate 
             navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancelButtonTapped))
         }
     }
-
+    
     
     
     @objc func dismissKeyboard() {
@@ -213,21 +213,24 @@ class BillDetailTableViewController: UITableViewController, UITextFieldDelegate 
         
         if remindSwitch.isOn {
             bill.remindDate = remindDatePicker.date
-            bill.schedule { [weak self] (permissionGranted) in
+            bill.schedule { (permissionGranted) in
                 if !permissionGranted {
                     controller.presentNeedAutorizationAlert()
-                } else {
-                    bill.remindDate = nil
                 }
-                
-                Database.shared.updateAndSave(bill)
             }
-            
-            func cancelButtonTapped() {
-                dismiss(animated: true, completion: nil)
+            } else {
+                bill.remindDate = nil
             }
-            
-            
+        
+            Database.shared.updateAndSave(bill)
         }
+        
+        
+        @objc func cancelButtonTapped() {
+            dismiss(animated: true, completion: nil)
+        }
+        
+        
+        
     }
-}
+

@@ -18,6 +18,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         noteCenter.setNotificationCategories([alarmCategory])
         noteCenter.delegate = self
         
+        
+        
+        
         // added in evening
         
         return true

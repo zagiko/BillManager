@@ -31,7 +31,11 @@ struct Bill: Codable {
             
             let content = UNMutableNotificationContent()
             content.title = "Please pay bill"
-            content.body = "\(String(describing: self.payee))"
+            
+            guard let textBody = self.payee else {
+                return
+            }
+            content.body = "\(textBody)"
             content.sound = UNNotificationSound.default
             content.categoryIdentifier = Bill.notificationCategoryID
             
