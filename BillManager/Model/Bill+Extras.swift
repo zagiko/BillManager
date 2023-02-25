@@ -26,50 +26,88 @@ extension Bill {
     }
     
     
-    func deleteReminder() {
-        
-        
     
+    
+    mutating func removeReminder() {
+        if let id = notificationID {
+            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [id])
+            notificationID = nil
+            remindDate = nil
+        }
     }
     
-    mutating func schedulesReminders(date: Data, completion: @escaping (Bill) -> () ) {
-        
-        
-    }
-    
-    private func authorizationToDisplay(completion: @escaping (Bool) -> () ) {
-        
-    }
-    
-    
-    
-    
-    
-    func permitionCheck(completion: @escaping (Bool) -> ()) {
-        
+    func autorizeIfNeeded(completion: @escaping (Bool) -> ()) {
         let notificationCenter = UNUserNotificationCenter.current()
         notificationCenter.getNotificationSettings{ (settings) in
-            
             switch settings.authorizationStatus {
-                
-            case.authorized:
+            case .authorized, .provisional:
                 completion(true)
                 
-            case.notDetermined:
-                notificationCenter.requestAuthorization(options: [.sound], completionHandler: {
-                    (granted, _) in
+            case .notDetermined:
+                notificationCenter.requestAuthorization(options: [.alert, .sound],
+                                                        completionHandler: { (granted, _) in
                     completion(granted)
+                    
                 })
-                
-            case .denied, .provisional, .ephemeral:
+            case .ephemeral:
                 completion(false)
+            case .denied:
+                completion(false)
+                
             @unknown default:
                 completion(false)
+                
             }
         }
-        
     }
     
-
     
+    
+    
+    mutating func schedulesReminders(date: Date, completion: @escaping (Bill) -> () ) {
+        
+        var updatedBill = self
+        
+        updatedBill.removeReminder()
+        
+        autorizeIfNeeded { (granted) in
+            guard granted else {
+                DispatchQueue.main.async {
+                    completion(updatedBill)
+                }
+                return
+            }
+            
+            let content = UNMutableNotificationContent()
+            content.title = "Bill Reminder"
+            content.body = String(format: "%@ due to %@ on %@", arguments: [(updatedBill.amount ?? 0).formatted(.currency(code: "usd")),(updatedBill.payee ?? ""), updatedBill.formattedDueDate])
+            content.categoryIdentifier = Bill.notificationCategoryID
+            content.sound = UNNotificationSound.default
+            
+            let triggerDateComponents = Calendar.current.dateComponents([.second,.minute,.hour,.day,.month,.year], from: date)
+            let trigger = UNCalendarNotificationTrigger(dateMatching: triggerDateComponents, repeats: false)
+            
+            let notificationID = UUID().uuidString
+            
+            let request = UNNotificationRequest(identifier: notificationID, content: content, trigger: trigger)
+            
+            UNUserNotificationCenter.current().add(request, withCompletionHandler: {
+                (error) in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        print(error.localizedDescription)
+                        
+                    } else {
+                        updatedBill.notificationID = notificationID
+                        updatedBill.remindDate = date
+                        
+                    }
+                    
+                    DispatchQueue.main.async {
+                        completion(updatedBill)
+                    }
+                }
+            })
+        }
+    }
 }

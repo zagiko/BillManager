@@ -46,8 +46,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         
     }
     
-    
-    
-    
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        
+        let id = response.notification.request.identifier
+        
+        guard var bill = Database.shared.getBill(notificationID: id) else { completionHandler(); return }
+        
+        switch response.actionIdentifier {
+        case Bill.inHourButtonID:
+            let newRemindDate = Date().addingTimeInterval(1 * 20)
+
+            bill.schedulesReminders(date: newRemindDate) { (updateBill) in
+                Database.shared.updateAndSave(updateBill)
+            }
+        case Bill.paidButtonID:
+            bill.paidDate = Date()
+            Database.shared.updateAndSave(bill)
+        default:
+            break
+        }
+        
+        completionHandler()
+
+    }
 }
 

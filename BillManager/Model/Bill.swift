@@ -6,6 +6,7 @@ struct Bill: Codable {
     let id: UUID
     var amount: Double?
     var dueDate: Date?
+    var notificationID: String?
     var paidDate: Date?
     var payee: String?
     var remindDate: Date?
@@ -19,7 +20,7 @@ struct Bill: Codable {
     }
     
     func schedule(completion: @escaping (Bool) -> ()) {
-        permitionCheck { (granted) in
+        autorizeIfNeeded { (granted) in
             guard granted else {
                 DispatchQueue.main.async {
                     completion(false)
@@ -35,9 +36,12 @@ struct Bill: Codable {
             guard let textBody = self.payee else {
                 return
             }
+//            content.body = self.id.uuidString
             content.body = "\(textBody)"
+            
             content.sound = UNNotificationSound.default
             content.categoryIdentifier = Bill.notificationCategoryID
+//            self.id.uuidString
             
             // Create push conditions
             
